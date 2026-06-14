@@ -1,7 +1,7 @@
-# ytget.ps1 — video / audio / transcript downloader
+# ytget.ps1 -- video / audio / transcript downloader
 # Run setup.bat first to install yt-dlp.exe and ffmpeg.exe
 
-$version   = "v3"
+$version   = "v3.1"
 [Console]::OutputEncoding = [System.Text.Encoding]::UTF8
 $OutputEncoding            = [System.Text.Encoding]::UTF8
 
@@ -9,7 +9,7 @@ $scriptDir  = Split-Path -Parent $MyInvocation.MyCommand.Path
 $ytdlp      = Join-Path $scriptDir "yt-dlp.exe"
 $ffmpegDir  = $scriptDir   # ffmpeg.exe lives in the same folder
 
-# Output folders — created next to this script
+# Output folders -- created next to this script
 $videoDl  = Join-Path $scriptDir "video download"
 $audioDl  = Join-Path $scriptDir "audio download"
 $transcDl = Join-Path $scriptDir "transcript download"
@@ -17,7 +17,7 @@ foreach ($d in @($videoDl, $audioDl, $transcDl)) {
     if (-not (Test-Path $d)) { New-Item -ItemType Directory -Path $d | Out-Null }
 }
 
-# Archive files — re-running a playlist skips already-finished videos
+# Archive files -- re-running a playlist skips already-finished videos
 $videoArchive = Join-Path $videoDl ".downloaded.txt"
 $audioArchive = Join-Path $audioDl ".downloaded.txt"
 
@@ -32,7 +32,7 @@ $commonFlags = @(
     "--ffmpeg-location", $ffmpegDir
 )
 
-# Current input list — set by Build-Inputs, read by every download mode
+# Current input list -- set by Build-Inputs, read by every download mode
 $script:Inputs = @()
 
 function Write-Cyan  ($m) { Write-Host $m -ForegroundColor Cyan }
@@ -43,8 +43,8 @@ function Write-Yellow($m) { Write-Host $m -ForegroundColor Yellow }
 function Clean-Str ($s) { return $s.Trim().Trim('"').Trim("'").Trim() }
 
 # Build $script:Inputs from a cleaned string.
-# If the whole string is an existing .txt file → batch mode (handles spaces in path).
-# Otherwise split on whitespace — each token is a URL.
+# If the whole string is an existing .txt file -> batch mode (handles spaces in path).
+# Otherwise split on whitespace -- each token is a URL.
 # Returns $true on success, $false on failure.
 function Build-Inputs ($s) {
     $script:Inputs = @()
@@ -75,19 +75,21 @@ function Invoke-Video ($height = "") {
     } else {
         "bv*+ba/b"
     }
-    Write-Cyan "▶ Video → $videoDl"
+    Write-Cyan "Video -> $videoDl"
     $inp = @($script:Inputs)
     & $ytdlp @commonFlags `
         "--download-archive" $videoArchive `
         "-P"                 $videoDl `
         "-f"                 $fmt `
         "--merge-output-format" "mp4" `
+        "--sleep-interval"   "3" `
+        "--max-sleep-interval" "8" `
         "-o"                 $outTpl `
         @inp
 }
 
 function Invoke-Audio {
-    Write-Cyan "♪ Audio (m4a) → $audioDl"
+    Write-Cyan "Audio (m4a) -> $audioDl"
     $inp = @($script:Inputs)
     & $ytdlp @commonFlags `
         "--download-archive" $audioArchive `
@@ -95,12 +97,14 @@ function Invoke-Audio {
         "--embed-thumbnail" `
         "-f"                 "bestaudio" `
         "-x" "--audio-format" "m4a" "--audio-quality" "0" `
+        "--sleep-interval"   "3" `
+        "--max-sleep-interval" "8" `
         "-o"                 $outTpl `
         @inp
 }
 
 function Invoke-Transcript {
-    Write-Cyan "✎ Transcript (en / zh / ja) → $transcDl"
+    Write-Cyan "Transcript (en / zh / ja) -> $transcDl"
     $inp    = @($script:Inputs)
     $before = @(Get-ChildItem $transcDl -Recurse -ErrorAction SilentlyContinue |
                 Where-Object { $_.Extension -in ".srt", ".vtt" }).Count
@@ -116,12 +120,12 @@ function Invoke-Transcript {
     $after = @(Get-ChildItem $transcDl -Recurse -ErrorAction SilentlyContinue |
                Where-Object { $_.Extension -in ".srt", ".vtt" }).Count
     if ($after -le $before) {
-        Write-Yellow "No subtitles found (en/zh/ja) — the video may not have CC enabled."
+        Write-Yellow "No subtitles found (en/zh/ja) -- the video may not have CC enabled."
     }
 }
 
 function Invoke-Update {
-    Write-Cyan "↻ Updating yt-dlp via pip…"
+    Write-Cyan "Updating yt-dlp via pip..."
     $done = $false
     foreach ($cmd in @("python", "py", "python3")) {
         if (Get-Command $cmd -ErrorAction SilentlyContinue) {
@@ -129,7 +133,7 @@ function Invoke-Update {
         }
     }
     if (-not $done) {
-        Write-Red "python not found — update manually:  python -m pip install -U yt-dlp"
+        Write-Red "python not found -- update manually:  python -m pip install -U yt-dlp"
     }
     Write-Host ""
     Write-Cyan "yt-dlp: $( & $ytdlp --version 2>$null )"
@@ -167,7 +171,7 @@ function Show-Home {
         "4" { Invoke-Update }
         { $_ -eq "q" -or $_ -eq "Q" } { exit 0 }
         default {
-            # direct paste of URL(s) → best quality video
+            # direct paste of URL(s) -> best quality video
             if (Build-Inputs $c) { Invoke-Video }
         }
     }
@@ -179,7 +183,7 @@ while ($true) {
     try {
         Show-Home
     } catch [System.Management.Automation.PipelineStoppedException] {
-        exit 0   # Ctrl+C during a download → return to menu or exit cleanly
+        exit 0   # Ctrl+C during a download -> return to menu or exit cleanly
     }
     Write-Host ""
 }
