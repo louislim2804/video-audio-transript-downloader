@@ -1,0 +1,461 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<title>ytget — Guide / 使用指南</title>
+<style>
+  :root{
+    --bg:#0d1117; --card:#161b22; --card2:#1c232c; --line:#2a313c;
+    --text:#e6edf3; --muted:#9aa7b4; --accent:#ff5b5b; --accent2:#58a6ff;
+    --term-bg:#0b0f14; --green:#3fb950; --yellow:#e3b341; --cyan:#39c5cf; --dim:#6e7681;
+    --radius:16px; --maxw:700px;
+  }
+  *{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+  html{-webkit-text-size-adjust:100%}
+  body{
+    margin:0; background:
+      radial-gradient(900px 500px at 50% -120px, rgba(88,166,255,.10), transparent 70%),
+      var(--bg);
+    color:var(--text);
+    font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,"PingFang SC","Microsoft YaHei","Noto Sans SC",sans-serif;
+    line-height:1.6; font-size:17px;
+    padding:0 16px calc(48px + env(safe-area-inset-bottom));
+  }
+  .wrap{max-width:var(--maxw);margin:0 auto}
+
+  /* sticky toggle bar */
+  .bar{
+    position:sticky; top:0; z-index:50;
+    margin:0 -16px; padding:12px 16px;
+    background:rgba(13,17,23,.82); backdrop-filter:blur(12px);
+    border-bottom:1px solid var(--line);
+    display:flex; align-items:center; justify-content:space-between; gap:12px;
+  }
+  .brand{font-weight:700;font-size:18px;letter-spacing:.3px;display:flex;align-items:center;gap:8px}
+  .brand .dot{color:var(--accent)}
+  .toggle{display:inline-flex;background:var(--card2);border:1px solid var(--line);border-radius:999px;padding:4px;gap:2px}
+  .toggle button{
+    appearance:none;border:0;background:transparent;color:var(--muted);font:inherit;font-weight:600;
+    font-size:14px;padding:7px 16px;border-radius:999px;cursor:pointer;transition:all .15s ease;min-width:54px
+  }
+  .toggle button.active{background:var(--accent);color:#fff}
+
+  header.hero{padding:34px 0 6px;text-align:center}
+  header.hero h1{font-size:31px;margin:0 0 10px;line-height:1.18}
+  header.hero h1 .hl{color:var(--accent2)}
+  header.hero p{color:var(--muted);margin:0 auto;font-size:16px;max-width:30em}
+  .badges{display:flex;flex-wrap:wrap;gap:8px;justify-content:center;margin-top:18px}
+  .badge{background:var(--card2);border:1px solid var(--line);border-radius:999px;padding:5px 13px;font-size:13px;color:var(--muted)}
+
+  /* ===== terminal mockup (screenshot hero) ===== */
+  .term{
+    background:var(--term-bg); border:1px solid var(--line); border-radius:12px;
+    margin:22px 0 6px; overflow:hidden; box-shadow:0 16px 50px rgba(0,0,0,.45);
+  }
+  .term-chrome{
+    display:flex;align-items:center;gap:8px;padding:9px 12px;
+    background:#11161d;border-bottom:1px solid var(--line)
+  }
+  .term-chrome .tab{
+    font-size:12.5px;color:var(--muted);background:var(--term-bg);
+    padding:5px 12px;border-radius:7px 7px 0 0;margin-bottom:-10px;border:1px solid var(--line);border-bottom:0
+  }
+  .term-chrome .spacer{flex:1}
+  .term-chrome .ctrl{width:11px;height:11px;border-radius:50%;display:inline-block}
+  .c-min{background:#febc2e}.c-max{background:#28c840}.c-cls{background:#ff5f57}
+  .term-body{
+    padding:14px 16px;font-family:"Cascadia Code","SF Mono",ui-monospace,Menlo,Consolas,monospace;
+    font-size:13px;line-height:1.62;white-space:pre-wrap;word-break:break-word;color:#cdd9e5
+  }
+  .term-body .p{color:var(--cyan)}        /* prompt path */
+  .term-body .cmd{color:#fff;font-weight:600}
+  .term-body .ok{color:var(--green)}
+  .term-body .hi{color:var(--yellow)}
+  .term-body .d{color:var(--dim)}
+  .term-body .a{color:var(--accent2)}
+  .term-body .cur{
+    display:inline-block;width:8px;height:15px;background:#cdd9e5;vertical-align:-2px;
+    animation:blink 1.1s step-end infinite
+  }
+  @keyframes blink{50%{opacity:0}}
+  .term-cap{text-align:center;color:var(--muted);font-size:13.5px;margin:0 0 6px}
+
+  section.card{background:var(--card);border:1px solid var(--line);border-radius:var(--radius);padding:20px;margin:16px 0}
+  h2{font-size:21px;margin:0 0 14px;display:flex;align-items:center;gap:10px}
+  h2 .num{flex:none;width:30px;height:30px;border-radius:9px;background:var(--accent);color:#fff;font-size:15px;display:grid;place-items:center;font-weight:700}
+  h3{font-size:16px;margin:18px 0 6px;color:var(--accent2)}
+  p{margin:8px 0}
+  ul,ol{margin:8px 0;padding-left:22px}
+  li{margin:6px 0}
+  .muted{color:var(--muted)}
+
+  code{background:#0a0e13;border:1px solid var(--line);border-radius:6px;padding:2px 7px;font-family:"SF Mono",ui-monospace,Menlo,Consolas,monospace;font-size:14px;word-break:break-word}
+  pre{background:#0a0e13;border:1px solid var(--line);border-radius:12px;padding:14px 16px;overflow-x:auto;margin:12px 0;font-family:"SF Mono",ui-monospace,Menlo,Consolas,monospace;font-size:13.5px;line-height:1.5}
+  pre code{background:none;border:0;padding:0}
+
+  .feat{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-top:6px}
+  .feat .f{background:var(--card2);border:1px solid var(--line);border-radius:12px;padding:14px}
+  .feat .f .ic{font-size:22px}
+  .feat .f b{display:block;margin:6px 0 2px}
+  .feat .f span{font-size:14px;color:var(--muted)}
+
+  .note{border-left:3px solid var(--accent2);background:var(--card2);border-radius:0 10px 10px 0;padding:12px 14px;margin:12px 0;font-size:15px}
+  .note.warn{border-color:var(--yellow)}
+  .note.ok{border-color:var(--green)}
+
+  table{width:100%;border-collapse:collapse;margin:12px 0;font-size:15px}
+  th,td{text-align:left;padding:10px 12px;border-bottom:1px solid var(--line)}
+  th{color:var(--muted);font-weight:600;font-size:13px;text-transform:uppercase;letter-spacing:.5px}
+  td code{font-size:13px}
+
+  .kbd{display:inline-block;background:var(--card2);border:1px solid var(--line);border-bottom-width:2px;border-radius:6px;padding:1px 8px;font-size:14px;font-weight:600}
+
+  .step{display:flex;gap:14px;margin:14px 0;align-items:flex-start}
+  .step .n{flex:none;width:28px;height:28px;border-radius:50%;background:var(--accent2);color:#06121f;font-weight:700;display:grid;place-items:center;font-size:15px}
+  .step .t{flex:1}
+  .step .t b{display:block;margin-bottom:2px}
+
+  .cta{display:inline-block;background:var(--accent);color:#fff;text-decoration:none;font-weight:700;padding:12px 22px;border-radius:12px;margin-top:6px}
+  .cta.ghost{background:transparent;border:1px solid var(--line);color:var(--text)}
+
+  footer{text-align:center;color:var(--muted);font-size:14px;padding:30px 0 10px}
+  footer a{color:var(--accent2);text-decoration:none}
+
+  [data-lang]{display:none}
+  body.en [data-lang="en"]{display:revert}
+  body.zh [data-lang="zh"]{display:revert}
+
+  @media(max-width:440px){
+    body{font-size:16px}
+    header.hero h1{font-size:25px}
+    h2{font-size:19px}
+    section.card{padding:16px}
+    .feat{grid-template-columns:1fr}
+    .term-body{font-size:11.7px}
+  }
+</style>
+</head>
+<body class="en">
+<div class="wrap">
+
+  <div class="bar">
+    <div class="brand"><span class="dot">●</span> ytget</div>
+    <div class="toggle" role="group" aria-label="Language">
+      <button id="btn-en" class="active" onclick="setLang('en')">EN</button>
+      <button id="btn-zh" onclick="setLang('zh')">中文</button>
+    </div>
+  </div>
+
+  <header class="hero">
+    <h1>
+      <span data-lang="en">Download <span class="hl">video, audio &amp; subtitles</span> with one click</span>
+      <span data-lang="zh">一键下载<span class="hl">视频、音频和字幕</span></span>
+    </h1>
+    <p>
+      <span data-lang="en">A free, open-source downloader for Windows. No ads, no paywall, no limits — and you can build your own.</span>
+      <span data-lang="zh">免费开源的 Windows 下载工具。无广告、无付费墙、无限制 —— 你也可以自己做一个。</span>
+    </p>
+    <div class="badges">
+      <span class="badge">🪟 Windows 10 / 11</span>
+      <span class="badge" data-lang="en">🆓 100% free &amp; open source</span>
+      <span class="badge" data-lang="zh">🆓 完全免费开源</span>
+      <span class="badge" data-lang="en">⚙️ Powered by yt-dlp + ffmpeg</span>
+      <span class="badge" data-lang="zh">⚙️ 基于 yt-dlp + ffmpeg</span>
+    </div>
+
+    <!-- ===== TERMINAL HERO (screenshot this) ===== -->
+    <div class="term-cap" data-lang="en">A real session — install once, then paste a link:</div>
+    <div class="term-cap" data-lang="zh">真实运行示例 —— 安装一次，之后粘贴链接即可：</div>
+    <div class="term">
+      <div class="term-chrome">
+        <span class="ctrl c-cls"></span><span class="ctrl c-min"></span><span class="ctrl c-max"></span>
+        <span class="tab">⌨ ytget — yt-dlp</span><span class="spacer"></span>
+      </div>
+<div class="term-body"><span class="p">PS C:\ytget&gt;</span> <span class="cmd">.\setup.bat</span>
+
+  <span class="hi">ytget setup</span>
+  <span class="d">────────────────────────────</span>
+  [1/2] yt-dlp.exe   downloading <span class="d">████████████</span> 100%  <span class="ok">✓</span>
+  [2/2] ffmpeg.exe   downloading <span class="d">████████████</span> 100%  <span class="ok">✓</span>
+
+  Setup complete!  <span class="ok">✓</span>
+
+<span class="p">PS C:\ytget&gt;</span> <span class="cmd">.\ytget.bat</span>
+
+  <span class="hi">=== ytget v3 ===</span>
+    1) Custom quality video
+    2) Audio only (m4a)
+    3) Transcript  (en / 中文 / ja)
+    4) Update yt-dlp
+    q) Quit
+
+  Number or paste link(s): <span class="a">https://youtu.be/VIDEO_ID</span>
+
+  <span class="d">Video -&gt; video download\</span>
+  [download] 100% of 42.8MiB in 00:06 at 7.1MiB/s
+  [Merger]   Merged into <span class="hi">"My Clip [VIDEO_ID].mp4"</span>  <span class="ok">✓</span>
+
+  <span class="ok">Done.</span> Saved to  video download\
+<span class="p">PS C:\ytget&gt;</span> <span class="cur"></span></div>
+    </div>
+    <div style="margin-top:14px;display:flex;gap:10px;flex-wrap:wrap;justify-content:center">
+      <a class="cta" href="https://github.com/louislim2804/video-audio-transript-downloader/archive/refs/heads/main.zip" data-lang="en">⬇️ Download for Windows</a>
+      <a class="cta" href="https://github.com/louislim2804/video-audio-transript-downloader/archive/refs/heads/main.zip" data-lang="zh">⬇️ 下载 (Windows)</a>
+      <a class="cta ghost" href="https://github.com/louislim2804/video-audio-transript-downloader" target="_blank" rel="noopener" data-lang="en">⭐ GitHub</a>
+      <a class="cta ghost" href="https://github.com/louislim2804/video-audio-transript-downloader" target="_blank" rel="noopener" data-lang="zh">⭐ GitHub</a>
+    </div>
+  </header>
+
+  <!-- WHAT IT DOES -->
+  <section class="card">
+    <h2>
+      <span data-lang="en">What it does</span>
+      <span data-lang="zh">能做什么</span>
+    </h2>
+    <div class="feat">
+      <div class="f"><div class="ic">🎬</div>
+        <b data-lang="en">Video, any quality</b><b data-lang="zh">任意画质视频</b>
+        <span data-lang="en">Pick 720p / 1080p / 1440p, or just grab best.</span>
+        <span data-lang="zh">可选 720p / 1080p / 1440p，或直接最佳画质。</span>
+      </div>
+      <div class="f"><div class="ic">🎵</div>
+        <b data-lang="en">Audio only (m4a)</b><b data-lang="zh">仅音频 (m4a)</b>
+        <span data-lang="en">Extract clean audio with cover art embedded.</span>
+        <span data-lang="zh">提取纯音频，自动嵌入封面。</span>
+      </div>
+      <div class="f"><div class="ic">📝</div>
+        <b data-lang="en">Subtitles / transcripts</b><b data-lang="zh">字幕 / 文字稿</b>
+        <span data-lang="en">EN / 中文 / 日本語 as .srt — great for study &amp; repurposing.</span>
+        <span data-lang="zh">英 / 中 / 日 .srt 字幕 —— 适合学习与二次创作。</span>
+      </div>
+      <div class="f"><div class="ic">📃</div>
+        <b data-lang="en">Batch &amp; playlists</b><b data-lang="zh">批量 &amp; 播放列表</b>
+        <span data-lang="en">A whole playlist or a .txt list of links in one go.</span>
+        <span data-lang="zh">整个播放列表或一份 .txt 链接清单，一次搞定。</span>
+      </div>
+    </div>
+  </section>
+
+  <!-- 1. SETUP -->
+  <section class="card">
+    <h2><span class="num">1</span>
+      <span data-lang="en">Install on Windows</span>
+      <span data-lang="zh">在 Windows 上安装</span>
+    </h2>
+    <div class="step"><div class="n">1</div><div class="t">
+      <b data-lang="en">Download the ZIP from GitHub</b><b data-lang="zh">从 GitHub 下载 ZIP</b>
+      <span class="muted" data-lang="en">Tap <b>“Download for Windows”</b> above (or GitHub → <i>Code → Download ZIP</i>).</span>
+      <span class="muted" data-lang="zh">点上方 <b>“下载 (Windows)”</b>（或在 GitHub 点 <i>Code → Download ZIP</i>）。</span>
+    </div></div>
+    <div class="step"><div class="n">2</div><div class="t">
+      <b data-lang="en">Right-click the .zip → <i>Extract All</i></b><b data-lang="zh">右键 .zip → <i>全部解压缩</i></b>
+      <span class="muted" data-lang="en">Put the extracted folder anywhere — e.g. <code>C:\ytget\</code></span>
+      <span class="muted" data-lang="zh">解压后的文件夹放在任意位置，例如 <code>C:\ytget\</code></span>
+    </div></div>
+    <div class="step"><div class="n">3</div><div class="t">
+      <b data-lang="en">Double-click <code>setup.bat</code></b><b data-lang="zh">双击 <code>setup.bat</code></b>
+      <span class="muted" data-lang="en">Auto-downloads <code>yt-dlp</code> (~20 MB) and <code>ffmpeg</code> (~120 MB) — wait for <b>“Setup complete!”</b></span>
+      <span class="muted" data-lang="zh">自动下载 <code>yt-dlp</code>（约 20 MB）和 <code>ffmpeg</code>（约 120 MB）—— 等待 <b>“Setup complete!”</b></span>
+    </div></div>
+    <div class="step"><div class="n">4</div><div class="t">
+      <b data-lang="en">Double-click <code>ytget-ps.bat</code> to start</b><b data-lang="zh">双击 <code>ytget-ps.bat</code> 开始使用</b>
+      <span class="muted" data-lang="en">The menu opens — you’re ready to download.</span>
+      <span class="muted" data-lang="zh">菜单弹出，即可开始下载。</span>
+    </div></div>
+    <div class="note ok">
+      <span data-lang="en">✅ Safe to run <code>setup.bat</code> again anytime — installed files are skipped; it can also check for updates.</span>
+      <span data-lang="zh">✅ <code>setup.bat</code> 可随时重复运行，已安装文件会跳过，也能检查更新。</span>
+    </div>
+    <div class="note warn">
+      <span data-lang="en">⚠️ If Windows shows <b>“Windows protected your PC”</b>, click <b>More info → Run anyway</b> (the scripts are open-source — you can read every line on GitHub).</span>
+      <span data-lang="zh">⚠️ 若 Windows 弹出 <b>“Windows 已保护你的电脑”</b>，点 <b>更多信息 → 仍要运行</b>（脚本完全开源，每一行都能在 GitHub 上查看）。</span>
+    </div>
+  </section>
+
+  <!-- 2. DAILY USE -->
+  <section class="card">
+    <h2><span class="num">2</span>
+      <span data-lang="en">Daily use</span><span data-lang="zh">日常使用</span>
+    </h2>
+    <p>
+      <span data-lang="en">Double-click <code>ytget-ps.bat</code>, then:</span>
+      <span data-lang="zh">双击 <code>ytget-ps.bat</code>，然后：</span>
+    </p>
+    <h3 data-lang="en">⚡ Quick download</h3><h3 data-lang="zh">⚡ 快速下载</h3>
+    <p>
+      <span data-lang="en">Paste a link and press <span class="kbd">Enter</span> → best-quality video automatically.</span>
+      <span data-lang="zh">粘贴链接按 <span class="kbd">Enter</span> → 自动下载最佳画质视频。</span>
+    </p>
+    <h3 data-lang="en">🔢 Type a number</h3><h3 data-lang="zh">🔢 输入数字</h3>
+    <p>
+      <span data-lang="en">Choose a mode: <b>1</b> video · <b>2</b> audio · <b>3</b> transcript.</span>
+      <span data-lang="zh">选择模式：<b>1</b> 视频 · <b>2</b> 音频 · <b>3</b> 字幕。</span>
+    </p>
+    <div class="note">
+      <span data-lang="en">↩️ Type <code>b</code> + Enter to go back. <span class="kbd">Ctrl</span>+<span class="kbd">C</span> stops a download.</span>
+      <span data-lang="zh">↩️ 输入 <code>b</code> 回车返回。<span class="kbd">Ctrl</span>+<span class="kbd">C</span> 停止下载。</span>
+    </div>
+  </section>
+
+  <!-- 3. BATCH -->
+  <section class="card">
+    <h2><span class="num">3</span>
+      <span data-lang="en">Batch &amp; playlists</span><span data-lang="zh">批量 &amp; 播放列表</span>
+    </h2>
+    <h3 data-lang="en">Paste many links (space-separated)</h3>
+    <h3 data-lang="zh">粘贴多个链接（空格分隔）</h3>
+<pre>https://youtu.be/AAA  https://youtu.be/BBB</pre>
+    <h3 data-lang="en">Or use a .txt file (one URL per line)</h3>
+    <h3 data-lang="zh">或使用 .txt 文件（每行一个链接）</h3>
+<pre>https://www.youtube.com/watch?v=AAAA
+https://www.youtube.com/watch?v=BBBB
+https://www.youtube.com/playlist?list=CCCC</pre>
+    <p class="muted">
+      <span data-lang="en">Drag the file into the window (or paste its path) when prompted. Paste a playlist URL and every video downloads automatically.</span>
+      <span data-lang="zh">提示时把文件拖入窗口（或粘贴路径）。粘贴播放列表链接，所有视频自动下载。</span>
+    </p>
+    <div class="note ok">
+      <span data-lang="en">✅ Re-running skips finished files (tracked in <code>.downloaded.txt</code>) — safe to resume anytime.</span>
+      <span data-lang="zh">✅ 重复运行会跳过已完成文件（记录在 <code>.downloaded.txt</code>），可随时续传。</span>
+    </div>
+  </section>
+
+  <!-- 4. WHERE FILES GO -->
+  <section class="card">
+    <h2><span class="num">4</span>
+      <span data-lang="en">Where files go</span><span data-lang="zh">文件保存位置</span>
+    </h2>
+    <table>
+      <tbody>
+        <tr><td><span data-lang="en">🎬 Videos</span><span data-lang="zh">🎬 视频</span></td><td><code>video download\</code></td></tr>
+        <tr><td><span data-lang="en">🎵 Audio</span><span data-lang="zh">🎵 音频</span></td><td><code>audio download\</code></td></tr>
+        <tr><td><span data-lang="en">📝 Subtitles</span><span data-lang="zh">📝 字幕</span></td><td><code>transcript download\</code></td></tr>
+      </tbody>
+    </table>
+    <p class="muted">
+      <span data-lang="en">Subfolders sit next to <code>ytget-ps.bat</code>. Subtitles save as <code>.srt</code> — open in any editor or player. No CC on a video? It tells you, nothing to fix.</span>
+      <span data-lang="zh">子文件夹就在 <code>ytget.bat</code> 旁边。字幕保存为 <code>.srt</code>，任何编辑器或播放器都能打开。视频没有 CC 时会提示，无需处理。</span>
+    </p>
+  </section>
+
+  <!-- 5. SUPPORTED SITES (honest) -->
+  <section class="card">
+    <h2><span class="num">5</span>
+      <span data-lang="en">What sites work</span><span data-lang="zh">支持哪些网站</span>
+    </h2>
+    <p>
+      <span data-lang="en">It uses <b>yt-dlp</b> under the hood, which supports 1000+ sites. In practice:</span>
+      <span data-lang="zh">底层使用 <b>yt-dlp</b>，理论支持 1000+ 网站。实际情况：</span>
+    </p>
+    <ul>
+      <li data-lang="en"><b>Works great:</b> YouTube — videos, Shorts &amp; playlists (no login needed).</li>
+      <li data-lang="zh"><b>稳定可用：</b>YouTube —— 视频、Shorts、播放列表（无需登录）。</li>
+      <li data-lang="en"><b>Usually works</b> for <i>public</i> posts: X/Twitter, Vimeo, SoundCloud, Dailymotion, Reddit, and more.</li>
+      <li data-lang="zh"><b>多数可用</b>（<i>公开</i>内容）：X/Twitter、Vimeo、SoundCloud、Dailymotion、Reddit 等。</li>
+    </ul>
+    <div class="note warn">
+      <span data-lang="en">⚠️ <b>Honest limit:</b> sites needing a login (private Instagram/Facebook, Douyin, Bilibili) won’t work without extra cookie setup this tool doesn’t include yet.</span>
+      <span data-lang="zh">⚠️ <b>如实说明：</b>需要登录的网站（私密 Instagram/Facebook、抖音、哔哩哔哩）需要额外的 Cookie 配置，本工具暂未内置，故无法下载。</span>
+    </div>
+  </section>
+
+  <!-- 6. BUILD YOUR OWN -->
+  <section class="card">
+    <h2><span class="num">6</span>
+      <span data-lang="en">Want to build your own?</span><span data-lang="zh">想自己做一个？</span>
+    </h2>
+    <p>
+      <span data-lang="en">No magic here — it’s a thin script around two great open-source tools. The recipe:</span>
+      <span data-lang="zh">其实没有黑科技 —— 它只是包在两个优秀开源工具外的一层薄脚本。配方如下：</span>
+    </p>
+    <div class="feat">
+      <div class="f"><div class="ic">⬇️</div>
+        <b data-lang="en">1. yt-dlp = the engine</b><b data-lang="zh">1. yt-dlp = 下载引擎</b>
+        <span data-lang="en">Does all the actual downloading from 1000+ sites.</span>
+        <span data-lang="zh">负责从 1000+ 网站真正下载内容。</span>
+      </div>
+      <div class="f"><div class="ic">🔧</div>
+        <b data-lang="en">2. ffmpeg = merge/convert</b><b data-lang="zh">2. ffmpeg = 合并/转码</b>
+        <span data-lang="en">Merges video+audio, makes m4a, converts subs to .srt.</span>
+        <span data-lang="zh">合并音视频、转 m4a、字幕转 .srt。</span>
+      </div>
+      <div class="f"><div class="ic">📋</div>
+        <b data-lang="en">3. A menu wrapper</b><b data-lang="zh">3. 一个菜单脚本</b>
+        <span data-lang="en">A PowerShell loop that builds the right yt-dlp flags for you.</span>
+        <span data-lang="zh">PowerShell 循环，替你拼好 yt-dlp 的参数。</span>
+      </div>
+      <div class="f"><div class="ic">📦</div>
+        <b data-lang="en">4. setup.bat</b><b data-lang="zh">4. setup.bat</b>
+        <span data-lang="en">Auto-fetches the two binaries so users install nothing.</span>
+        <span data-lang="zh">自动下载这两个程序，用户无需手动安装。</span>
+      </div>
+    </div>
+
+    <h3 data-lang="en">Try the core in 30 seconds</h3>
+    <h3 data-lang="zh">30 秒体验核心功能</h3>
+    <p class="muted">
+      <span data-lang="en">Everything the app does starts from one command:</span>
+      <span data-lang="zh">整个工具的起点就是这一条命令：</span>
+    </p>
+<pre><span style="color:var(--dim)"># best-quality video</span>
+yt-dlp "https://youtu.be/VIDEO_ID"
+
+<span style="color:var(--dim)"># audio only</span>
+yt-dlp -x --audio-format m4a "URL"
+
+<span style="color:var(--dim)"># subtitles only (en + 中文)</span>
+yt-dlp --skip-download --write-subs --sub-langs en,zh-Hans "URL"</pre>
+    <p class="muted">
+      <span data-lang="en">Wrap those in a script with a menu, and you’ve rebuilt ytget. The full source is on GitHub — fork it as your starting point.</span>
+      <span data-lang="zh">把这些命令包进一个带菜单的脚本，就重建了 ytget。完整源码在 GitHub —— Fork 它作为你的起点。</span>
+    </p>
+    <p>
+      <a class="cta" href="https://github.com/louislim2804/video-audio-transript-downloader" target="_blank" rel="noopener" data-lang="en">📂 View / fork source</a>
+      <a class="cta" href="https://github.com/louislim2804/video-audio-transript-downloader" target="_blank" rel="noopener" data-lang="zh">📂 查看 / Fork 源码</a>
+      <a class="cta ghost" href="https://github.com/yt-dlp/yt-dlp" target="_blank" rel="noopener">yt-dlp ↗</a>
+    </p>
+  </section>
+
+  <!-- TIPS -->
+  <section class="card">
+    <h2>
+      <span data-lang="en">Tips</span><span data-lang="zh">小贴士</span>
+    </h2>
+    <ul>
+      <li data-lang="en"><b>File won’t play?</b> Install <a href="https://www.videolan.org/vlc/" target="_blank" rel="noopener">VLC</a> — it plays everything.</li>
+      <li data-lang="zh"><b>文件无法播放？</b>安装 <a href="https://www.videolan.org/vlc/" target="_blank" rel="noopener">VLC</a>，支持所有格式。</li>
+      <li data-lang="en"><b>Keep yt-dlp updated</b> (menu option 4) — YouTube changes often; updates fix breakage.</li>
+      <li data-lang="zh"><b>保持 yt-dlp 更新</b>（菜单选项 4）—— YouTube 经常变动，更新可修复问题。</li>
+      <li data-lang="en"><b>Shorts</b> download like normal videos — just paste the <code>/shorts/</code> URL.</li>
+      <li data-lang="zh"><b>Shorts</b> 与普通视频相同，直接粘贴 <code>/shorts/</code> 链接。</li>
+    </ul>
+  </section>
+
+  <footer>
+    <p>
+      <span data-lang="en">Free &amp; open source · Built on <a href="https://github.com/yt-dlp/yt-dlp" target="_blank" rel="noopener">yt-dlp</a> &amp; <a href="https://ffmpeg.org" target="_blank" rel="noopener">ffmpeg</a></span>
+      <span data-lang="zh">免费开源 · 基于 <a href="https://github.com/yt-dlp/yt-dlp" target="_blank" rel="noopener">yt-dlp</a> 与 <a href="https://ffmpeg.org" target="_blank" rel="noopener">ffmpeg</a></span>
+    </p>
+    <p><a href="https://github.com/louislim2804/video-audio-transript-downloader" target="_blank" rel="noopener">github.com/louislim2804/video-audio-transript-downloader</a></p>
+  </footer>
+
+</div>
+
+<script>
+  function setLang(lang){
+    document.body.classList.remove('en','zh');
+    document.body.classList.add(lang);
+    document.documentElement.lang = (lang==='zh') ? 'zh' : 'en';
+    document.getElementById('btn-en').classList.toggle('active', lang==='en');
+    document.getElementById('btn-zh').classList.toggle('active', lang==='zh');
+    try{ localStorage.setItem('ytget-lang', lang); }catch(e){}
+  }
+  (function(){
+    var saved; try{ saved = localStorage.getItem('ytget-lang'); }catch(e){}
+    var browserZh = (navigator.language||'').toLowerCase().indexOf('zh') === 0;
+    setLang(saved || (browserZh ? 'zh' : 'en'));
+  })();
+</script>
+</body>
+</html>
