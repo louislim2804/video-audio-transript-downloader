@@ -37,8 +37,8 @@ A simple tool to download YouTube (and more) videos, audio, and transcripts on W
 
 ## Daily Use / 日常使用
 
-Double-click **ytget.bat** — the menu appears:
-双击 **ytget.bat**，菜单如下：
+Double-click **ytget-ps.bat** — the menu appears:
+双击 **ytget-ps.bat**，菜单如下：
 
 ```
 === ytget v3 ===
@@ -91,8 +91,8 @@ Then paste the file path (or drag the file into the terminal) when prompted.
 
 ## Where Files Go / 文件保存位置
 
-All downloads are saved in subfolders next to ytget.bat:
-所有下载文件保存在 ytget.bat 同一文件夹内的子文件夹中：
+All downloads are saved in subfolders next to ytget-ps.bat:
+所有下载文件保存在 ytget-ps.bat 同一文件夹内的子文件夹中：
 
 | Downloaded content | Folder |
 |---|---|
@@ -117,14 +117,17 @@ Re-running a download skips files already finished (tracked in `.downloaded.txt`
 
 ## Supported Sites / 支持的网站
 
-This tool supports **1000+ websites** — not just YouTube.
-本工具支持 **1000+ 网站**，不只是 YouTube。
+This tool runs on **yt-dlp**, which supports 1000+ sites. In practice:
+本工具基于 **yt-dlp**，理论支持 1000+ 网站。实际情况：
 
-Works: YouTube, YouTube Shorts, YouTube playlists, Instagram, Facebook, Twitter/X, Vimeo, SoundCloud, and many more.
-支持：YouTube、YouTube Shorts、YouTube 播放列表、Instagram、Facebook、Twitter/X、Vimeo、SoundCloud 等。
+- **Works great:** YouTube — videos, Shorts & playlists (no login needed).
+- **Usually works** for *public* posts: Twitter/X, Vimeo, SoundCloud, Dailymotion, Reddit, and more.
 
-Some sites (e.g. Douyin, Bilibili) require you to be logged in — they are not supported without extra setup.
-部分网站（如抖音、哔哩哔哩）需要登录才能下载，暂不支持。
+- **稳定可用：** YouTube —— 视频、Shorts、播放列表（无需登录）。
+- **多数可用**（*公开*内容）：Twitter/X、Vimeo、SoundCloud、Dailymotion、Reddit 等。
+
+Sites that require a login (private Instagram/Facebook, Douyin, Bilibili) need extra cookie setup this tool doesn't include yet — so they won't work out of the box.
+需要登录的网站（私密 Instagram/Facebook、抖音、哔哩哔哩）需要额外的 Cookie 配置，本工具暂未内置，故无法直接下载。
 
 ---
 
